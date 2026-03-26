@@ -3,6 +3,7 @@ package com.twitter.recos.hose.common
 import com.twitter.finagle.stats.StatsReceiver
 import com.twitter.recos.internal.thriftscala.RecosHoseMessage
 import com.twitter.util.Future
+import com.twitter.util.logging.Logger
 import org.apache.kafka.clients.consumer.ConsumerRecord
 
 /**
@@ -12,6 +13,8 @@ case class RecosEdgeProcessor(
   edgeCollector: EdgeCollector
 )(
   implicit statsReceiver: StatsReceiver) {
+
+  private val log = Logger.get(getClass)
 
   private val scopedStats = statsReceiver.scope("RecosEdgeProcessor")
 
@@ -33,7 +36,7 @@ case class RecosEdgeProcessor(
     } catch {
       case e: Throwable =>
         errorCounter.incr()
-        e.printStackTrace()
+        log.error(e, "error processing recos hose message")
         Future.Unit
     }
   }
