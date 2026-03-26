@@ -4,6 +4,7 @@ import com.twitter.finagle.stats.StatsReceiver
 import com.twitter.recos.internal.thriftscala.RecosHoseMessage
 import com.twitter.util.Future
 import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.slf4j.LoggerFactory
 
 /**
  * The class processes RecosHoseMessage and inserts the message as an edge into a recos graph.
@@ -13,6 +14,7 @@ case class RecosEdgeProcessor(
 )(
   implicit statsReceiver: StatsReceiver) {
 
+  private val logger = LoggerFactory.getLogger(getClass)
   private val scopedStats = statsReceiver.scope("RecosEdgeProcessor")
 
   private val processEventsCounter = scopedStats.counter("process_events")
@@ -33,7 +35,11 @@ case class RecosEdgeProcessor(
     } catch {
       case e: Throwable =>
         errorCounter.incr()
-        e.printStackTrace()
+        logger.error("Failed to process RecosHoseMessage from Kafka (topic={}, partition={}, offset={})",
+          record.topic(),
+          Int.box(record.partition()),
+          Long.box(record.offset()),
+          e)
         Future.Unit
     }
   }
