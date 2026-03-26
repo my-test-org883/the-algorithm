@@ -123,8 +123,9 @@ trait UnifiedGraphWriterMulti[
       }
     } catch {
       case e: Throwable =>
-        e.printStackTrace()
-        log.error(e, e.toString)
+        // Avoid printing stack traces directly to stderr (CWE-209).
+        // Use structured logging instead.
+        log.error(e, "Failed to initialize RecosHose Kafka consumers/processors")
         processors.foreach { processor =>
           processor.close()
         }
