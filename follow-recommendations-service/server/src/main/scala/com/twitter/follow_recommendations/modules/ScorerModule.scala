@@ -14,13 +14,28 @@ object ScorerModule extends TwitterModule {
   private val STPScorerPath = "/quality/stp_models/20141223"
 
   private def fileFromResource(resource: String): File = {
+    // Restrict to classpath resources under the expected base directory to avoid path traversal.
+    if (resource == null || !resource.startsWith(STPScorerPath + "/") || resource.contains("..")) {
+      throw new IllegalArgumentException("Invalid resource path")
+    }
+
     val inputStream = getClass.getResourceAsStream(resource)
-    val file = File.createTempFile(resource, "temp")
+    if (inputStream == null) {
+      throw new IllegalArgumentException(s"Resource not found: $resource")
+    }
+
+    val file = File.createTempFile("stp_model_", ".tmp")
+    file.deleteOnExit()
+
     val fos = new FileOutputStream(file)
-    Iterator
-      .continually(inputStream.read)
-      .takeWhile(-1 !=)
-      .foreach(fos.write)
+    try {
+      Iterator
+        .continually(inputStream.read)
+        .takeWhile(-1 !=)
+        .foreach(fos.write)
+    } finally {
+      try fos.close() finally inputStream.close()
+    }
     file
   }
 
