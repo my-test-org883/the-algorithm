@@ -174,8 +174,8 @@ class TimelineRankerServer extends {
       Await.ready(compactServer)
     } catch {
       case e: Throwable =>
-        e.printStackTrace()
-        mainLogger.error(e, s"failure in main")
+        // Avoid printing stack traces directly to stderr; log via the configured logger instead.
+        mainLogger.error(e, "failure in main")
         System.exit(1)
     }
   }
