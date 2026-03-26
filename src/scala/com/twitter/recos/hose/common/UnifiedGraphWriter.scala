@@ -117,7 +117,7 @@ trait UnifiedGraphWriter[
       }
     } catch {
       case e: Throwable =>
-        e.printStackTrace()
+        // Avoid printing stack traces directly to stderr to prevent information exposure.
         log.error(e, e.toString)
         processors.foreach { processor =>
           processor.close()
