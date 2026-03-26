@@ -1,6 +1,7 @@
 package com.twitter.recos.hose.common
 
 import com.twitter.finagle.stats.StatsReceiver
+import com.twitter.logging.Logger
 import com.twitter.recos.internal.thriftscala.RecosHoseMessage
 import com.twitter.util.Future
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -33,7 +34,9 @@ case class RecosEdgeProcessor(
     } catch {
       case e: Throwable =>
         errorCounter.incr()
-        e.printStackTrace()
+        // Avoid printing stack traces to stderr to prevent information disclosure.
+        // Stats are still recorded; details should be captured by the service logging framework.
+        com.twitter.logging.Logger.get(getClass).error(e, "Error processing recos hose message")
         Future.Unit
     }
   }
