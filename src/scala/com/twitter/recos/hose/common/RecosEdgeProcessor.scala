@@ -33,7 +33,8 @@ case class RecosEdgeProcessor(
     } catch {
       case e: Throwable =>
         errorCounter.incr()
-        e.printStackTrace()
+        // Avoid leaking internal details via stack traces; rely on metrics and structured logging.
+        scopedStats.counter(e.getClass.getSimpleName).incr()
         Future.Unit
     }
   }
