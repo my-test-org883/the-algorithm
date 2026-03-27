@@ -18,7 +18,18 @@ object ProxyCredentialsModule extends TwitterModule {
   def providesProxyCredentials(
     @Flag(HttpClientWithProxyCredentialsPath) proxyCredentialsPath: String,
   ): ProxyCredentials = {
-    val credentialsFile = new File(proxyCredentialsPath)
+    if (proxyCredentialsPath == null || proxyCredentialsPath.trim.isEmpty) {
+      throw MissingProxyCredentialsException
+    }
+
+    val credentialsFile = new File(proxyCredentialsPath).getCanonicalFile
+
+    // Disallow path traversal / unexpected file reads by requiring an existing, regular file.
+    // This also avoids accepting directories or special files.
+    if (!credentialsFile.exists() || !credentialsFile.isFile) {
+      throw MissingProxyCredentialsException
+    }
+
     ProxyCredentials(CredentialsUtil(credentialsFile))
       .getOrElse(throw MissingProxyCredentialsException)
   }
