@@ -33,7 +33,7 @@ case class RecosEdgeProcessor(
     } catch {
       case e: Throwable =>
         errorCounter.incr()
-        e.printStackTrace()
+        // Avoid leaking internal details via stack traces; count and fail silently.
         Future.Unit
     }
   }
