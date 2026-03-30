@@ -174,7 +174,6 @@ class TimelineRankerServer extends {
       Await.ready(compactServer)
     } catch {
       case e: Throwable =>
-        e.printStackTrace()
         mainLogger.error(e, s"failure in main")
         System.exit(1)
     }
